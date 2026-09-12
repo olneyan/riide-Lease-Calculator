@@ -23,6 +23,7 @@
     --bg: #f1f4f8;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --footer-h: calc(126px + var(--safe-bottom));
+    --add-bar-h: 64px;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -89,7 +90,7 @@
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 16px 16px calc(var(--footer-h) + 24px);
+    padding: 16px 16px calc(var(--footer-h) + var(--add-bar-h) + 20px);
   }
 
   .panel { display: none; }
@@ -126,10 +127,22 @@
     font-size: 1em;
   }
 
+  .add-bar {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: var(--footer-h);
+    padding: 10px 16px;
+    background: var(--bg);
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+    z-index: 8;
+    transition: transform 0.1s linear;
+  }
+
+  @media (min-width: 700px) {
+    .add-bar > div { max-width: 640px; margin: 0 auto; }
+  }
+
   button.add-row {
-    position: sticky;
-    bottom: calc(var(--footer-h) + 12px);
-    margin-top: 14px;
     padding: 12px;
     width: 100%;
     background: var(--blue);
@@ -140,7 +153,6 @@
     cursor: pointer;
     font-size: 0.95em;
     box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-    z-index: 5;
   }
   button.add-row:active { background: var(--blue-dark); }
 
@@ -222,7 +234,7 @@
   }
 
   @media print {
-    nav.tabs, button, .controls { display: none; }
+    nav.tabs, button, .controls, .add-bar { display: none; }
     .panel { display: block !important; margin-bottom: 16px; }
     .footer-bar {
       position: static;
@@ -262,7 +274,6 @@
         <thead><tr><th>#</th><th>Amount ($)</th><th></th></tr></thead>
         <tbody id="debitBody"></tbody>
       </table>
-      <button class="add-row" onclick="addRow('debit')">➕ Add Debit</button>
       <div class="total">Total Debits: $<span id="debitTotal">0.00</span></div>
     </div>
   </div>
@@ -274,7 +285,6 @@
         <thead><tr><th>#</th><th>Amount ($)</th><th></th></tr></thead>
         <tbody id="creditBody"></tbody>
       </table>
-      <button class="add-row" onclick="addRow('credit')">➕ Add Charge</button>
       <div class="total">
         Total Charges: $<span id="creditTotal">0.00</span><br>
         After 5% Off: $<span id="creditDiscounted">0.00</span>
@@ -289,7 +299,6 @@
         <thead><tr><th>#</th><th>Amount ($)</th><th></th></tr></thead>
         <tbody id="chargeBody"></tbody>
       </table>
-      <button class="add-row" onclick="addRow('charge')">➕ Add Charge</button>
       <div class="total">
         Total Charges: $<span id="chargeTotal">0.00</span><br>
         After 10% Off: $<span id="chargeDiscounted">0.00</span>
@@ -316,6 +325,10 @@
   </div>
 </main>
 
+<div class="add-bar" id="addBar">
+  <div><button id="addBtn" class="add-row">➕ Add Debit</button></div>
+</div>
+
 <div class="footer-bar">
   <div class="footer-inner">
     <div class="sponsor-line">
@@ -333,14 +346,32 @@
 <script>
 let debitCount = 0, creditCount = 0, chargeCount = 0;
 let activeSection = null;
+let currentTab = 'debit';
+
+const ADD_LABELS = { debit: '➕ Add Debit', credit: '➕ Add Charge', charge: '➕ Add Charge' };
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => showTab(btn.dataset.tab));
 });
 
+document.getElementById('addBtn').addEventListener('click', () => addRow(currentTab));
+
 function showTab(tab) {
+  currentTab = tab;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+  updateAddBar();
+}
+
+function updateAddBar() {
+  const addBar = document.getElementById('addBar');
+  const addBtn = document.getElementById('addBtn');
+  if (currentTab === 'summary') {
+    addBar.hidden = true;
+  } else {
+    addBar.hidden = false;
+    addBtn.textContent = ADD_LABELS[currentTab];
+  }
 }
 
 function addRow(type) {
@@ -488,9 +519,12 @@ window.onload = () => {
 function pinFooterAboveKeyboard() {
   const vv = window.visualViewport;
   const footer = document.querySelector('.footer-bar');
-  if (!vv || !footer) return;
+  const addBar = document.getElementById('addBar');
+  if (!vv) return;
   const covered = window.innerHeight - (vv.height + vv.offsetTop);
-  footer.style.transform = covered > 0 ? `translateY(-${covered}px)` : '';
+  const t = covered > 0 ? `translateY(-${covered}px)` : '';
+  if (footer) footer.style.transform = t;
+  if (addBar) addBar.style.transform = t;
 }
 
 if (window.visualViewport) {
