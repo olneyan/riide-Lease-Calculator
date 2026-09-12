@@ -653,8 +653,24 @@ if (window.visualViewport) {
 }
 
 if ('serviceWorker' in navigator) {
+  // when a new service worker takes over an already-open app, reload once
+  // so the installed app actually picks up the new version instead of
+  // silently continuing to run the old cached page
+  let refreshingForUpdate = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshingForUpdate) return;
+    refreshingForUpdate = true;
+    window.location.reload();
+  });
+
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // check for an update every time the app is opened/resumed
+      reg.update().catch(() => {});
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+    }).catch(() => {});
   });
 }
 </script>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'riide-lease-v9';
+const CACHE_NAME = 'riide-lease-v10';
 const ASSETS = [
   './',
   './index.html',
