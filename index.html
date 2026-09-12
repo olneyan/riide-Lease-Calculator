@@ -22,7 +22,7 @@
     --red: #e74c3c;
     --bg: #f1f4f8;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --footer-h: calc(60px + var(--safe-bottom));
+    --footer-h: calc(96px + var(--safe-bottom));
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -183,39 +183,60 @@
   #clearBtn { background: #ecf0f1; color: var(--red); }
   #printBtn { background: var(--dark); color: #fff; }
 
-  .credit-line {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 0.78em;
-    color: #8a97a3;
-    line-height: 1.6;
-  }
-  .credit-line strong { color: #5c6b78; }
-
   .footer-bar {
     position: fixed;
     left: 0; right: 0; bottom: 0;
     background: var(--dark);
     color: #fff;
-    padding: 12px 18px calc(12px + var(--safe-bottom));
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 10px 18px calc(10px + var(--safe-bottom));
     box-shadow: 0 -4px 14px rgba(0,0,0,0.2);
     z-index: 10;
     transition: transform 0.1s linear;
   }
-  .footer-bar .label { font-size: 0.75em; color: #b8c4d1; text-transform: uppercase; letter-spacing: 0.5px; }
-  .footer-bar .amount { font-size: 1.4em; font-weight: 700; color: #6fdc8c; }
+
+  .sponsor-line {
+    text-align: center;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #f5c518;
+    letter-spacing: 0.2px;
+    line-height: 1.45;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    margin-bottom: 8px;
+  }
+  .sponsor-line strong { color: #ffd94d; }
+  .sponsor-line .contact { display: block; font-weight: 600; font-size: 0.92em; color: #fff2c4; }
+
+  .totals-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .totals-row .label { font-size: 0.75em; color: #b8c4d1; text-transform: uppercase; letter-spacing: 0.5px; }
+  .totals-row .amount { font-size: 1.4em; font-weight: 700; color: #6fdc8c; }
 
   @media (min-width: 700px) {
     main { max-width: 640px; margin: 0 auto; width: 100%; }
-    .footer-bar > div { max-width: 640px; margin: 0 auto; width: 100%; display:flex; justify-content:space-between; align-items:center; }
+    .footer-inner { max-width: 640px; margin: 0 auto; width: 100%; }
   }
 
   @media print {
-    .footer-bar, nav.tabs, button, .controls { display: none; }
+    nav.tabs, button, .controls { display: none; }
     .panel { display: block !important; margin-bottom: 16px; }
+    .footer-bar {
+      position: static;
+      transform: none !important;
+      box-shadow: none;
+      color: #000;
+      background: none;
+      border-top: 2px solid #000;
+      margin-top: 20px;
+    }
+    .sponsor-line { color: #000; border-bottom-color: #999; }
+    .sponsor-line strong, .sponsor-line .contact { color: #000; }
+    .totals-row .label { color: #444; }
+    .totals-row .amount { color: #000; }
     body { background: white; color: black; }
   }
 </style>
@@ -292,17 +313,19 @@
       <button id="clearBtn" onclick="clearAll()">🗑️ Clear All</button>
       <button id="printBtn" onclick="window.print()">🖨️ Print / PDF</button>
     </div>
-    <div class="credit-line">
-      Built &amp; sponsored by <strong>RIGHT CHOICE ACCOUNTING AND TAX</strong><br>
-      306-201-8522 &nbsp;&middot;&nbsp; 901 1st Avenue North, Unit 10
-    </div>
   </div>
 </main>
 
 <div class="footer-bar">
-  <div>
-    <span class="label">Grand Total</span>
-    <span class="amount">$<span id="grandTotal">0.00</span></span>
+  <div class="footer-inner">
+    <div class="sponsor-line">
+      Built &amp; Sponsored by <strong>RIGHT CHOICE ACCOUNTING AND TAX</strong>
+      <span class="contact">306-201-8522 &nbsp;&middot;&nbsp; 901 1st Avenue North, Unit 10</span>
+    </div>
+    <div class="totals-row">
+      <span class="label">Grand Total</span>
+      <span class="amount">$<span id="grandTotal">0.00</span></span>
+    </div>
   </div>
 </div>
 
