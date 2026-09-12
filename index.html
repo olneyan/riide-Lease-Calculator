@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>riide Lease Calculator</title>
+<meta name="theme-color" content="#2c3e50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="riide Lease">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  :root {
+    --blue: #3498db;
+    --blue-dark: #2980b9;
+    --dark: #2c3e50;
+    --slate: #34495e;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --bg: #f1f4f8;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overscroll-behavior-y: contain;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    margin: 0;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  header {
+    background: var(--dark);
+    color: #fff;
+    padding: 14px 16px 10px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.25em;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  nav.tabs {
+    display: flex;
+    background: var(--dark);
+    flex-shrink: 0;
+    padding: 0 6px 8px;
+    gap: 6px;
+  }
+
+  nav.tabs button {
+    flex: 1;
+    background: rgba(255,255,255,0.08);
+    color: #cfd8e3;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 4px;
+    font-size: 0.78em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1.2;
+  }
+
+  nav.tabs button.active {
+    background: var(--blue);
+    color: #fff;
+  }
+
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px 100px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.15s ease-out; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity:1; transform: translateY(0);} }
+
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+
+  .section h2 {
+    margin-top: 0;
+    font-size: 1.15em;
+    color: var(--slate);
+    border-left: 5px solid var(--blue);
+    padding-left: 10px;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th { background: #ecf0f1; font-weight: 600; font-size: 0.85em; }
+  th, td { padding: 8px; border: 1px solid #ddd; text-align: center; }
+
+  input[type="number"] {
+    padding: 10px 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%;
+    max-width: 110px;
+    text-align: right;
+    font-size: 1em;
+  }
+
+  button.add-row {
+    margin-top: 14px;
+    padding: 12px;
+    width: 100%;
+    background: var(--blue);
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95em;
+  }
+  button.add-row:active { background: var(--blue-dark); }
+
+  .del-btn {
+    background: none;
+    border: none;
+    font-size: 1.1em;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  .total {
+    font-weight: bold;
+    text-align: right;
+    margin-top: 14px;
+    font-size: 1.05em;
+    color: var(--dark);
+  }
+
+  .summary {
+    background: linear-gradient(to right, #dfe9f3, #ffffff);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+  .summary h2 { margin-top: 0; color: var(--dark); font-size: 1.2em; }
+  .summary p { margin: 8px 0; display: flex; justify-content: space-between; }
+  .summary strong { color: var(--green); }
+
+  .controls { margin-top: 20px; display: flex; gap: 10px; }
+  .controls button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9em;
+  }
+  #clearBtn { background: #ecf0f1; color: var(--red); }
+  #printBtn { background: var(--dark); color: #fff; }
+
+  .credit-line {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.78em;
+    color: #8a97a3;
+    line-height: 1.6;
+  }
+  .credit-line strong { color: #5c6b78; }
+
+  .footer-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--dark);
+    color: #fff;
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -4px 14px rgba(0,0,0,0.2);
+  }
+  .footer-bar .label { font-size: 0.75em; color: #b8c4d1; text-transform: uppercase; letter-spacing: 0.5px; }
+  .footer-bar .amount { font-size: 1.4em; font-weight: 700; color: #6fdc8c; }
+
+  @media (min-width: 700px) {
+    main { max-width: 640px; margin: 0 auto; width: 100%; }
+    .footer-bar > div { max-width: 640px; margin: 0 auto; width: 100%; display:flex; justify-content:space-between; align-items:center; }
+  }
+
+  @media print {
+    .footer-bar, nav.tabs, button, .controls { display: none; }
+    .panel { display: block !important; margin-bottom: 16px; }
+    body { background: white; color: black; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>riide Lease Calculator</h1>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="debit">Debits</button>
+  <button class="tab-btn" data-tab="credit">Cards</button>
+  <button class="tab-btn" data-tab="charge">Accounts</button>
+  <button class="tab-btn" data-tab="summary">Summary</button>
+</nav>
+
+<main>
+  <div class="panel active" id="panel-debit">
+    <div class="section">
+      <h2>Debits</h2>
+      <table id="debitTable">
+        <thead><tr><th>#</th><th>Amount ($)</th><th></th></tr></thead>
+        <tbody id="debitBody"></tbody>
+      </table>
+      <button class="add-row" onclick="addRow('debit')">➕ Add Debit</button>
+      <div class="total">Total Debits: $<span id="debitTotal">0.00</span></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-credit">
+    <div class="section">
+      <h2>Credit Cards &amp; Riide App Charges</h2>
+      <table id="creditTable">
+        <thead><tr><th>#</th><th>Amount ($)</th><th></th></tr></thead>
+        <tbody id="creditBody"></tbody>
+      </table>
+      <button class="add-row" onclick="addRow('credit')">➕ Add Charge</button>
+      <div class="total">
+        Total Charges: $<span id="creditTotal">0.00</span><br>
+        After 5% Off: $<span id="creditDiscounted">0.00</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-charge">
+    <div class="section">
+      <h2>Charge Accounts</h2>
+      <table id="chargeTable">
+        <thead><tr><th>#</th><th>Amount ($)</th><th></th></tr></thead>
+        <tbody id="chargeBody"></tbody>
+      </table>
+      <button class="add-row" onclick="addRow('charge')">➕ Add Charge</button>
+      <div class="total">
+        Total Charges: $<span id="chargeTotal">0.00</span><br>
+        After 10% Off: $<span id="chargeDiscounted">0.00</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-summary">
+    <div class="summary">
+      <h2>Summary</h2>
+      <p><span>Debits Total</span><span>$<span id="summaryDebits">0.00</span></span></p>
+      <p><span>Cards (5% Off)</span><span>$<span id="summaryCredits">0.00</span></span></p>
+      <p><span>Accounts (10% Off)</span><span>$<span id="summaryCharges">0.00</span></span></p>
+      <p><span>Cards Deduction</span><span>$<span id="deductionCredit">0.00</span></span></p>
+      <p><span>Accounts Deduction</span><span>$<span id="deductionCharge">0.00</span></span></p>
+      <p><strong>Total Deductions</strong><strong>$<span id="summaryDeductions">0.00</span></strong></p>
+      <hr>
+      <p><strong>Grand Total</strong><strong>$<span id="grandTotal2">0.00</span></strong></p>
+    </div>
+    <div class="controls">
+      <button id="clearBtn" onclick="clearAll()">🗑️ Clear All</button>
+      <button id="printBtn" onclick="window.print()">🖨️ Print / PDF</button>
+    </div>
+    <div class="credit-line">
+      Built &amp; sponsored by <strong>RIGHT CHOICE ACCOUNTING AND TAX</strong><br>
+      306-201-8522 &nbsp;&middot;&nbsp; 901 1st Avenue North, Unit 10
+    </div>
+  </div>
+</main>
+
+<div class="footer-bar">
+  <div>
+    <span class="label">Grand Total</span>
+    <span class="amount">$<span id="grandTotal">0.00</span></span>
+  </div>
+</div>
+
+<script>
+let debitCount = 0, creditCount = 0, chargeCount = 0;
+let activeSection = null;
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => showTab(btn.dataset.tab));
+});
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+}
+
+function addRow(type) {
+  const tbody = document.getElementById(type + 'Body');
+  let count = type === 'debit' ? ++debitCount : type === 'credit' ? ++creditCount : ++chargeCount;
+
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${count}</td>
+    <td><input type="number" inputmode="decimal" placeholder="0.00"
+      oninput="updateTotals(); saveState();" onfocus="setActiveSection('${type}')"></td>
+    <td><button class="del-btn" onclick="removeRow(this)">🗑️</button></td>
+  `;
+  tbody.appendChild(row);
+
+  setTimeout(() => {
+    const inputs = tbody.querySelectorAll('input[type="number"]');
+    const newInput = inputs[inputs.length - 1];
+    newInput.focus();
+  }, 0);
+
+  updateTotals();
+  saveState();
+}
+
+function setActiveSection(type) { activeSection = type; }
+
+function removeRow(button) {
+  button.closest('tr').remove();
+  updateTotals();
+  saveState();
+}
+
+function clearAll() {
+  if (!confirm('Clear all entries?')) return;
+  ['debitBody', 'creditBody', 'chargeBody'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+  debitCount = creditCount = chargeCount = 0;
+  addRow('debit');
+  addRow('credit');
+  addRow('charge');
+  showTab('debit');
+}
+
+function updateTotals() {
+  const getValueSum = selector => {
+    let sum = 0;
+    document.querySelectorAll(selector).forEach(el => {
+      const value = parseFloat(el.value);
+      const isNegative = value < 0;
+      el.style.borderColor = isNegative ? "#e74c3c" : "#ccc";
+      sum += isNaN(value) ? 0 : value;
+    });
+    return sum;
+  };
+
+  const debitTotal = getValueSum('#debitBody input[type="number"]');
+  const creditTotal = getValueSum('#creditBody input[type="number"]');
+  const chargeTotal = getValueSum('#chargeBody input[type="number"]');
+
+  const creditDiscounted = creditTotal * 0.95;
+  const chargeDiscounted = chargeTotal * 0.90;
+
+  const deductionCredit = creditTotal - creditDiscounted;
+  const deductionCharge = chargeTotal - chargeDiscounted;
+  const totalDeductions = deductionCredit + deductionCharge;
+
+  const grandTotal = debitTotal + creditDiscounted + chargeDiscounted;
+
+  document.getElementById('debitTotal').textContent = debitTotal.toFixed(2);
+  document.getElementById('creditTotal').textContent = creditTotal.toFixed(2);
+  document.getElementById('creditDiscounted').textContent = creditDiscounted.toFixed(2);
+  document.getElementById('chargeTotal').textContent = chargeTotal.toFixed(2);
+  document.getElementById('chargeDiscounted').textContent = chargeDiscounted.toFixed(2);
+
+  document.getElementById('summaryDebits').textContent = debitTotal.toFixed(2);
+  document.getElementById('summaryCredits').textContent = creditDiscounted.toFixed(2);
+  document.getElementById('summaryCharges').textContent = chargeDiscounted.toFixed(2);
+
+  document.getElementById('deductionCredit').textContent = deductionCredit.toFixed(2);
+  document.getElementById('deductionCharge').textContent = deductionCharge.toFixed(2);
+  document.getElementById('summaryDeductions').textContent = totalDeductions.toFixed(2);
+
+  document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+  document.getElementById('grandTotal2').textContent = grandTotal.toFixed(2);
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Enter' && activeSection) {
+    event.preventDefault();
+    const tbody = document.getElementById(activeSection + 'Body');
+    const lastInput = tbody.querySelector('tr:last-child input[type="number"]');
+    if (lastInput && parseFloat(lastInput.value)) {
+      addRow(activeSection);
+    }
+  }
+});
+
+function saveState() {
+  const getVals = id => Array.from(document.querySelectorAll('#' + id + ' input[type="number"]')).map(i => i.value);
+  try {
+    localStorage.setItem('riideLease', JSON.stringify({
+      debit: getVals('debitBody'),
+      credit: getVals('creditBody'),
+      charge: getVals('chargeBody')
+    }));
+  } catch (e) {}
+}
+
+function loadState() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem('riideLease')); } catch (e) {}
+  if (!data) {
+    addRow('debit'); addRow('credit'); addRow('charge');
+    return;
+  }
+  ['debit','credit','charge'].forEach(type => {
+    const vals = data[type] && data[type].length ? data[type] : [''];
+    vals.forEach(v => {
+      addRow(type);
+      const tbody = document.getElementById(type + 'Body');
+      const inputs = tbody.querySelectorAll('input[type="number"]');
+      inputs[inputs.length - 1].value = v;
+    });
+  });
+  updateTotals();
+}
+
+window.onload = () => {
+  loadState();
+};
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+
+</body>
+</html>
