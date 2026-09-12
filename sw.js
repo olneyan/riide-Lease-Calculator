@@ -1,4 +1,4 @@
-const CACHE_NAME = 'riide-lease-v7';
+const CACHE_NAME = 'riide-lease-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -26,6 +26,14 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (url.pathname.endsWith('/announcement.json')) {
+    event.respondWith(
+      fetch(event.request).catch(() => new Response('{}', { headers: { 'Content-Type': 'application/json' } }))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(cached => {
       const fetchPromise = fetch(event.request).then(response => {
