@@ -181,6 +181,7 @@
   .summary h2 { margin-top: 0; color: var(--dark); font-size: 1.2em; }
   .summary p { margin: 8px 0; display: flex; justify-content: space-between; }
   .summary strong { color: var(--green); }
+  .entry-count { font-size: 0.8em; font-weight: 400; color: #8a97a3; }
 
   .controls { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
   .controls button {
@@ -363,9 +364,9 @@
   <div class="panel" id="panel-summary">
     <div class="summary">
       <h2>Summary</h2>
-      <p><span>Debits Total</span><span>$<span id="summaryDebits">0.00</span></span></p>
-      <p><span>Cards (5% Off)</span><span>$<span id="summaryCredits">0.00</span></span></p>
-      <p><span>Accounts (10% Off)</span><span>$<span id="summaryCharges">0.00</span></span></p>
+      <p><span>Debits Total <span class="entry-count" id="debitEntryCount">(0 entries)</span></span><span>$<span id="summaryDebits">0.00</span></span></p>
+      <p><span>Cards (5% Off) <span class="entry-count" id="creditEntryCount">(0 entries)</span></span><span>$<span id="summaryCredits">0.00</span></span></p>
+      <p><span>Accounts (10% Off) <span class="entry-count" id="chargeEntryCount">(0 entries)</span></span><span>$<span id="summaryCharges">0.00</span></span></p>
       <p><span>Cards Deduction</span><span>$<span id="deductionCredit">0.00</span></span></p>
       <p><span>Accounts Deduction</span><span>$<span id="deductionCharge">0.00</span></span></p>
       <p><strong>Total Deductions</strong><strong>$<span id="summaryDeductions">0.00</span></strong></p>
@@ -474,9 +475,9 @@ function removeRow(button) {
 async function shareSummary() {
   const text =
     `riide Lease Calculator Summary\n\n` +
-    `Debits Total: $${document.getElementById('debitTotal').textContent}\n` +
-    `Cards (5% Off): $${document.getElementById('creditDiscounted').textContent}\n` +
-    `Accounts (10% Off): $${document.getElementById('chargeDiscounted').textContent}\n\n` +
+    `Debits Total ${document.getElementById('debitEntryCount').textContent}: $${document.getElementById('debitTotal').textContent}\n` +
+    `Cards (5% Off) ${document.getElementById('creditEntryCount').textContent}: $${document.getElementById('creditDiscounted').textContent}\n` +
+    `Accounts (10% Off) ${document.getElementById('chargeEntryCount').textContent}: $${document.getElementById('chargeDiscounted').textContent}\n\n` +
     `Grand Total: $${document.getElementById('grandTotal').textContent}\n\n` +
     `RIGHT CHOICE ACCOUNTING AND TAX\n306-201-8522\n901 1st Avenue North, Unit 10`;
 
@@ -505,21 +506,29 @@ function clearAll() {
   showTab('debit');
 }
 
+function entryLabel(count) {
+  return `(${count} ${count === 1 ? 'entry' : 'entries'})`;
+}
+
 function updateTotals() {
-  const getValueSum = selector => {
-    let sum = 0;
+  const summarize = selector => {
+    let sum = 0, count = 0;
     document.querySelectorAll(selector).forEach(el => {
       const value = parseFloat(el.value);
       const isNegative = value < 0;
       el.style.borderColor = isNegative ? "#e74c3c" : "#ccc";
-      sum += isNaN(value) ? 0 : value;
+      if (!isNaN(value)) { sum += value; count++; }
     });
-    return sum;
+    return { sum, count };
   };
 
-  const debitTotal = getValueSum('#debitBody input[type="number"]');
-  const creditTotal = getValueSum('#creditBody input[type="number"]');
-  const chargeTotal = getValueSum('#chargeBody input[type="number"]');
+  const debit = summarize('#debitBody input[type="number"]');
+  const credit = summarize('#creditBody input[type="number"]');
+  const charge = summarize('#chargeBody input[type="number"]');
+
+  const debitTotal = debit.sum;
+  const creditTotal = credit.sum;
+  const chargeTotal = charge.sum;
 
   const creditDiscounted = creditTotal * 0.95;
   const chargeDiscounted = chargeTotal * 0.90;
@@ -539,6 +548,10 @@ function updateTotals() {
   document.getElementById('summaryDebits').textContent = debitTotal.toFixed(2);
   document.getElementById('summaryCredits').textContent = creditDiscounted.toFixed(2);
   document.getElementById('summaryCharges').textContent = chargeDiscounted.toFixed(2);
+
+  document.getElementById('debitEntryCount').textContent = entryLabel(debit.count);
+  document.getElementById('creditEntryCount').textContent = entryLabel(credit.count);
+  document.getElementById('chargeEntryCount').textContent = entryLabel(charge.count);
 
   document.getElementById('deductionCredit').textContent = deductionCredit.toFixed(2);
   document.getElementById('deductionCharge').textContent = deductionCharge.toFixed(2);
