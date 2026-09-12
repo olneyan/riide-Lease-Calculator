@@ -607,32 +607,66 @@ window.onload = () => {
   loadAnnouncement();
 };
 
+function showToast(text) {
+  const banner = document.getElementById('announcementBanner');
+  document.getElementById('announcementText').textContent = text;
+  banner.hidden = false;
+
+  const hide = () => {
+    banner.classList.add('hide');
+    setTimeout(() => {
+      banner.hidden = true;
+      banner.classList.remove('hide');
+    }, 250);
+  };
+
+  const timer = setTimeout(hide, 5000);
+  document.getElementById('announcementClose').onclick = () => {
+    clearTimeout(timer);
+    hide();
+  };
+}
+
 async function loadAnnouncement() {
+  // a manually-sent one-off announcement always takes priority over the
+  // rotating tip pool, and is only ever shown once (per id) per device
   try {
     const res = await fetch(`announcement.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.active && data.message && data.id && localStorage.getItem('dismissedAnnouncementId') !== data.id) {
+        localStorage.setItem('dismissedAnnouncementId', data.id);
+        showToast(`📢 ${data.message}`);
+        return;
+      }
+    }
+  } catch (e) {}
+
+  loadTip();
+}
+
+async function loadTip() {
+  // cycles through the full bundled tip list before repeating any tip
+  try {
+    const res = await fetch('messages.json');
     if (!res.ok) return;
-    const data = await res.json();
-    if (!data.active || !data.message || !data.id) return;
-    if (localStorage.getItem('dismissedAnnouncementId') === data.id) return;
+    const tips = await res.json();
+    if (!Array.isArray(tips) || tips.length === 0) return;
 
-    const banner = document.getElementById('announcementBanner');
-    document.getElementById('announcementText').textContent = data.message;
-    banner.hidden = false;
+    let shown = [];
+    try { shown = JSON.parse(localStorage.getItem('shownTipIndices')) || []; } catch (e) {}
 
-    const dismiss = () => {
-      localStorage.setItem('dismissedAnnouncementId', data.id);
-      banner.classList.add('hide');
-      setTimeout(() => {
-        banner.hidden = true;
-        banner.classList.remove('hide');
-      }, 250);
-    };
+    let remaining = tips.map((_, i) => i).filter(i => !shown.includes(i));
+    if (remaining.length === 0) {
+      shown = [];
+      remaining = tips.map((_, i) => i);
+    }
 
-    const timer = setTimeout(dismiss, 5000);
-    document.getElementById('announcementClose').onclick = () => {
-      clearTimeout(timer);
-      dismiss();
-    };
+    const pick = remaining[Math.floor(Math.random() * remaining.length)];
+    shown.push(pick);
+    localStorage.setItem('shownTipIndices', JSON.stringify(shown));
+
+    showToast(`💡 ${tips[pick]}`);
   } catch (e) {}
 }
 

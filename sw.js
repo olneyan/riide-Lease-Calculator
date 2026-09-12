@@ -1,8 +1,9 @@
-const CACHE_NAME = 'riide-lease-v11';
+const CACHE_NAME = 'riide-lease-v12';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './messages.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
