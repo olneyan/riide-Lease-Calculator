@@ -234,8 +234,16 @@
   }
 
   @media print {
+    html, body { height: auto !important; }
+    body { display: block !important; }
+    main {
+      flex: none !important;
+      overflow: visible !important;
+      height: auto !important;
+      padding: 0 !important;
+    }
     nav.tabs, button, .controls, .add-bar { display: none; }
-    .panel { display: block !important; margin-bottom: 16px; }
+    .panel { display: block !important; margin-bottom: 16px; page-break-inside: avoid; }
     .footer-bar {
       position: static;
       transform: none !important;
