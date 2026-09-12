@@ -182,7 +182,7 @@
   .summary p { margin: 8px 0; display: flex; justify-content: space-between; }
   .summary strong { color: var(--green); }
 
-  .controls { margin-top: 20px; display: flex; gap: 10px; }
+  .controls { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
   .controls button {
     flex: 1;
     padding: 12px;
@@ -192,6 +192,8 @@
     cursor: pointer;
     font-size: 0.9em;
   }
+  .controls button.full-width { flex: 1 1 100%; }
+  #shareBtn { background: var(--blue); color: #fff; }
   #clearBtn { background: #ecf0f1; color: var(--red); }
   #printBtn { background: var(--dark); color: #fff; }
 
@@ -327,6 +329,7 @@
       <p><strong>Grand Total</strong><strong>$<span id="grandTotal2">0.00</span></strong></p>
     </div>
     <div class="controls">
+      <button id="shareBtn" class="full-width" onclick="shareSummary()">📤 Share (Email / Text / WhatsApp)</button>
       <button id="clearBtn" onclick="clearAll()">🗑️ Clear All</button>
       <button id="printBtn" onclick="window.print()">🖨️ Print / PDF</button>
     </div>
@@ -422,6 +425,28 @@ function removeRow(button) {
   button.closest('tr').remove();
   updateTotals();
   saveState();
+}
+
+async function shareSummary() {
+  const text =
+    `riide Lease Calculator Summary\n\n` +
+    `Debits Total: $${document.getElementById('debitTotal').textContent}\n` +
+    `Cards (5% Off): $${document.getElementById('creditDiscounted').textContent}\n` +
+    `Accounts (10% Off): $${document.getElementById('chargeDiscounted').textContent}\n\n` +
+    `Grand Total: $${document.getElementById('grandTotal').textContent}\n\n` +
+    `RIGHT CHOICE ACCOUNTING AND TAX\n306-201-8522\n901 1st Avenue North, Unit 10`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'riide Lease Calculator', text });
+    } catch (e) {
+      // user cancelled the share sheet — nothing to do
+    }
+  } else {
+    // desktop/unsupported fallback: open the default mail client
+    const subject = encodeURIComponent('riide Lease Calculator Summary');
+    window.location.href = `mailto:?subject=${subject}&body=${encodeURIComponent(text)}`;
+  }
 }
 
 function clearAll() {
