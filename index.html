@@ -616,7 +616,7 @@ function loadState() {
 
 window.onload = () => {
   loadState();
-  loadAnnouncement();
+  loadAnnouncement(trackAppOpen());
 };
 
 function showToast(text) {
@@ -643,9 +643,18 @@ function showToast(text) {
   };
 }
 
-async function loadAnnouncement() {
+const TIP_START_AFTER_OPENS = 11;
+
+function trackAppOpen() {
+  const n = parseInt(localStorage.getItem('appOpenCount') || '0', 10) + 1;
+  localStorage.setItem('appOpenCount', String(n));
+  return n;
+}
+
+async function loadAnnouncement(openCount) {
   // a manually-sent one-off announcement always takes priority over the
-  // rotating tip pool, and is only ever shown once (per id) per device
+  // rotating tip pool, shows immediately regardless of open count, and is
+  // only ever shown once (per id) per device
   try {
     const res = await fetch(`announcement.json?t=${Date.now()}`, { cache: 'no-store' });
     if (res.ok) {
@@ -658,6 +667,9 @@ async function loadAnnouncement() {
     }
   } catch (e) {}
 
+  // hold off on routine tax tips for the first several opens so the app
+  // doesn't feel naggy right out of the gate
+  if (openCount <= TIP_START_AFTER_OPENS) return;
   loadTip();
 }
 
