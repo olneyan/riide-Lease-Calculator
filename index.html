@@ -625,7 +625,10 @@ function loadState() {
 
 window.onload = () => {
   loadState();
-  loadAnnouncement(trackAppOpen());
+  const openCount = trackAppOpen();
+  // wait until the user has settled into the app before interrupting
+  // with a tip/announcement, rather than showing it the instant it opens
+  setTimeout(() => loadAnnouncement(openCount), 10000);
 };
 
 function showToast(text) {
