@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>riide Lease Calculator</title>
 <meta name="theme-color" content="#2c3e50">
+<meta name="color-scheme" content="light">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,6 +15,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <style>
   :root {
+    color-scheme: light;
     --blue: #3498db;
     --blue-dark: #2980b9;
     --dark: #2c3e50;
@@ -295,6 +297,8 @@
     box-shadow: 0 12px 36px rgba(0,0,0,0.35);
     animation: cardIn 0.25s ease-out;
   }
+
+  #announcementText { color: #7a5b00; }
   .announcement-toast.hide .announcement-card { animation: cardOut 0.2s ease-in forwards; }
   @keyframes cardIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
   @keyframes cardOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.92); } }
